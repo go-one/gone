@@ -1,0 +1,4 @@
+#
+#(.+?)(?:\t| )+    (.+?)(?:\t| )+    (.+?)\.(.+?)(?:\t| )+    ((.+?)(?:)?
+/               GET,POST             ApplicationController.Index 213q a
+    /               GET             ApplicationController.Index
