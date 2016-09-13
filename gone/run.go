@@ -30,6 +30,6 @@ func RunCommandHandler(c *cli.Context) error {
 	lib.InfoLog("\nRunning application:")
 	lib.IncrLogOffset()
 	builder := lib.NewApplication(configPath)
-	err := builder.Build()
-	return err
+	builder.Build()
+	return nil
 }

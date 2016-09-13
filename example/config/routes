@@ -1,4 +1,3 @@
 #
 #(.+?)(?:\t| )+    (.+?)(?:\t| )+    (.+?)\.(.+?)(?:\t| )+    ((.+?)(?:)?
-/               GET,POST             ApplicationController.Index 213q a
-    /               GET             ApplicationController.Index
+/test/{id}          GET             ApplicationController.Index alias

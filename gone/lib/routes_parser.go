@@ -11,15 +11,17 @@ import (
 type Route struct {
 	Route             string
 	HTPPMethods       []string
+	HandlerPackage    string
 	HandlerController string
 	HandlerAction     string
 	Alias             string
+	Controller        *Controller
 }
 
-var routesRegex = regexp.MustCompile("^(.+?)(?:\t| )+(.+?)(?:\t| )+(.+?)\\.(.+?)(?:(?:\t| )+(.+?))?$")
+var routesRegex = regexp.MustCompile("^(.+?)(?:\t| )+(.+?)(?:\t| )+(.+?)(?:(?:\t| )+(.+?))?$")
 
-func ParseRoutes(path string) ([]Route, error) {
-	InfoLog("Parsing routes from %s", path)
+func ParseRoutes(path string) ([]*Route, error) {
+	InfoLog("Parsing routes in %s", path)
 	IncrLogOffset()
 	defer DecrLogOffset()
 	routesFile, err := os.Open(path)
@@ -27,7 +29,7 @@ func ParseRoutes(path string) ([]Route, error) {
 		return nil, err
 	}
 	defer routesFile.Close()
-	result := []Route{}
+	result := []*Route{}
 	routesReader := bufio.NewReader(routesFile)
 	i := 0
 	// TODO: imports, subroutes
@@ -52,18 +54,30 @@ func ParseRoutes(path string) ([]Route, error) {
 			continue
 		}
 		sParams := routesRegex.FindAllStringSubmatch(line, -1)[0]
-		route := Route{}
+		route := &Route{}
 		route.Route = sParams[1]
 		if len(sParams) == 6 {
 			route.Alias = sParams[5]
 		}
 		hm := strings.Split(sParams[2], ",")
 		for i, method := range hm {
-			hm[i] = strings.ToLower(method)
+			hm[i] = strings.ToUpper(method)
 		}
 		route.HTPPMethods = hm
-		route.HandlerController = sParams[3]
-		route.HandlerAction = sParams[4]
+		action := sParams[3]
+		actionParts := strings.Split(action, ".")
+		switch len(actionParts) {
+		case 2:
+			route.HandlerController = actionParts[0]
+			route.HandlerAction = actionParts[1]
+		case 3:
+			route.HandlerPackage = actionParts[0]
+			route.HandlerController = actionParts[1]
+			route.HandlerAction = actionParts[2]
+		default:
+			ErrorLog("Parsing route %s errror at line %d. Bad action.", path, i)
+			continue
+		}
 		result = append(result, route)
 	}
 	InfoLog("Found %d routes", len(result))
